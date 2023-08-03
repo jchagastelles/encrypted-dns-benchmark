@@ -1,0 +1,11 @@
+Domain,Timestamp,Response Status,Response Time,Addresses
+1691070043.0465002,google.com,1490.0263671875,1,[';; communications error to 185.228.168.10#443: failure']
+1691070044.5366423,a-msedge.net,1333.24951171875,1,[';; communications error to 185.228.168.10#443: failure']
+1691070045.8699956,facebook.com,1229.74560546875,1,[';; communications error to 185.228.168.10#443: failure']
+1691070047.0998507,microsoft.com,1322.338134765625,1,[';; communications error to 185.228.168.10#443: failure']
+1691070048.4223046,amazonaws.com,1304.60205078125,1,[';; communications error to 185.228.168.10#443: failure']
+1691070049.7270267,googleapis.com,1519.12060546875,1,[';; communications error to 185.228.168.10#443: failure']
+1691070051.2462795,apple.com,1537.11669921875,1,[';; communications error to 185.228.168.10#443: failure']
+1691070052.7835221,youtube.com,1519.666259765625,1,[';; communications error to 185.228.168.10#443: failure']
+1691070054.3033128,akamaiedge.net,1263.25244140625,1,[';; communications error to 185.228.168.10#443: failure']
+1691070055.5666788,netflix.com,1302.3623046875,1,[';; communications error to 185.228.168.10#443: failure']
