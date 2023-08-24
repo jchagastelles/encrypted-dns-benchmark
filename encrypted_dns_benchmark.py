@@ -1,148 +1,143 @@
-import dnspython_wrapper
-import pydig_wrapper
-import dig_subprocess
-
-from urllib.parse import urlparse
+import encrypted_dns_measurement as edm
 import csv
-from pathlib import Path
-import time
+import pandas as pd
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
-from tranco import Tranco
+tools = ['dnspython', 'pydig']
+protocols = ['do53', 'doh']
+resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
+top10_domains = edm.get_tranco_top_x_domains(10)
 
-import subprocess
+# Queries
+# unfiltered: 'Protocol/Tool == "{p/t}"'
+# no Timeout: '& `Response Time` < 3000'
+# google domain: '& Domain == google.com'
+# top 10 domains: '& Domain in @top10_domains'
 
-# TODO: get tranco top x .br domains + automate for any country code
-#with open('datasets/tranco_W9Z49-1m.csv/top-1m.csv', 'r') as dl:
-    #topXdomains = [next(dl).strip().split(',')[1] for _ in range(y) if next(dl).endswith('.br')]
-    #print(f'Tranco top {x} .br:\n{topXdomains}\n')'''
 
-# download latest tranco list
-t = Tranco(cache=True, cache_dir='./datasets/domains/')
-latest_list = t.list()
-#date_list = t.list(date='2023-07-19')
+def benchmark_tools(df):
+    """
+    query, plot and save charts to compare tools (1 for each protocol)
+        Y axis = Mean Response Times (ms)
+        X axis = Main resolvers
+    """
+    for p in protocols:
+        # Select and reshape data
+        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000 & `Response Status` == 1 & Domain == "google.com"')[["Tool", "Response Time", "Resolver"]]
+        df2_pivot = pd.pivot_table(
+            df2,
+            values="Response Time",
+            index="Resolver",
+            columns="Tool",
+            aggfunc=np.mean
+        )
+        print(df2_pivot)
 
-# get top x domains from tranco list
-def get_tranco_top_x_domains(x):
-    return latest_list.top(x)
+        # Format and plot chart
+        ax = df2_pivot.plot(kind="bar")
+        f = ax.get_figure()
+        #f.tight_layout()
+        ax.set_xlabel("Resolvers")
+        ax.set_ylabel("Response Time (ms)")
 
-# get main public resolvers
-def get_main_resolvers(protocol):
-    ret = ''
-    with open(f'./datasets/resolvers/main-resolvers-{protocol}.txt', 'r') as mrf:
-        ret = [line.strip().split(',') for line in mrf]
-    return ret
+        plt.subplots_adjust(bottom=0.3)
+        #plt.show()
+        f.savefig(f'analysis/tool_benchmark_{p}.pdf', bbox_inches='tight', dpi=300)
 
-# get first x resolvers from curl list (created with scrape_curl_doh_providers.py script)
-def get_curl_first_x_resolvers(x):
-    # TODO: import scricpt & automate getting list + creating file
-    with open('./datasets/resolvers/curl-doh-resolvers-19072023.txt', 'r') as crf:
-        first_x_resolvers = [next(crf).strip() for _ in range(y)]
-    return first_x_resolvers
+def benchmark_protocols(df):
+    """
+    query, plot and save charts to compare protocols (1 for each tool)
+        Y axis = Mean Response Times (ms)
+        X axis = Main Resolvers
+    """
+    for t in tools:
+        # Select and reshape data
+        df2 = df.query(f'Tool == "{t}" & `Response Time` < 3000 & `Response Status` == 1 & Domain == "google.com"')[["Protocol", "Response Time", "Resolver"]]
+        df2_pivot = pd.pivot_table(
+            df2,
+            values="Response Time",
+            index="Resolver",
+            columns="Protocol",
+            aggfunc=np.mean
+        )
+        print(df2_pivot)
 
-# write results to .csv
-def export_results(tool, protocol, resolver, results):
-    csv_path = Path(f'./results/{tool}-{protocol}-{resolver}.csv')
-    write_or_append = 'a'
+        # Format and plot chart
+        ax = df2_pivot.plot(kind="bar")
+        f = ax.get_figure()
+        #f.tight_layout()
+        ax.set_xlabel("Resolvers")
+        ax.set_ylabel("Response Time (ms)")
 
-    print(f'WRITING TO {csv_path}.....')
-    if not csv_path.exists():
-        with open(f'./results/{tool}-{protocol}-{resolver}.csv', 'w', newline='') as csvfile:
-            # write header (query_result dictionary keys)
-            fieldnames = ['Domain', 'Timestamp', 'Response Status', 'Response Time', 'RCODE', 'TTL', 'Addresses', 'Error']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval='')
-            writer.writeheader()
+        plt.subplots_adjust(bottom=0.3)
+        #plt.show()
+        f.savefig(f'analysis/protocol_benchmark_{t}.pdf', bbox_inches='tight', dpi=300)
 
-            # write row
-            for i, r in enumerate(results):
-                # stringify & format fields
-                r['Timestamp'] = f'{r["Timestamp"]:.3f}'
-                r['Response Time'] = f'{r["Response Time"]:.3f}'
-                # write row
-                writer.writerow(r)
-        return
-    else:
-        with open(f'./results/{tool}-{protocol}-{resolver}.csv', 'a', newline='') as csvfile:
-            fieldnames = ['Domain', 'Timestamp', 'Response Status', 'Response Time', 'RCODE', 'TTL', 'Addresses', 'Error']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval='')
-            for i, r in enumerate(results):
-                # stringify & format fields
-                r['Timestamp'] = f'{r["Timestamp"]:.3f}'
-                r['Response Time'] = f'{r["Response Time"]:.3f}'
-                # write row
-                writer.writerow(r)
-        return
-        
+def benchmark_top10_domains(df):
+    for t in tools:
+        for p in protocols:
+            # Select and reshape data
+            df2 = df.query(f'Tool == "{t}" & Protocol == "{p}" & `Response Time` < 3000 & `Response Status` == 1 & Domain in @top10_domains')[["Protocol", "Response Time", "Domain", "Resolver"]]
+            df2_pivot = pd.pivot_table(
+                df2,
+                values="Response Time",
+                index="Resolver",
+                columns="Domain",
+                aggfunc=np.mean
+            )
+            print(df2_pivot)
+
+            # Format and plot chart
+            ax = df2_pivot.plot(kind="bar")
+            #f.tight_layout()
+            ax.set_xlabel("Resolvers")
+            ax.set_ylabel("Response Time (ms)")
+            ax.legend(bbox_to_anchor=(1.0, 1.0))
+            f = ax.get_figure()
+
+            plt.subplots_adjust(bottom=0.3)
+            #plt.show()
+            f.savefig(f'analysis/top10domains_benchmark_{t}_{p}.pdf', bbox_inches='tight', dpi=300)
 
 if __name__ == "__main__":
-    start_time = time.time()
+    # TODO: BETTER PARAMETRIZATION
+    tools = ['dnspython', 'pydig']
+    protocols = ['do53', 'doh']
+    resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
 
-    do53_resolvers = get_main_resolvers('do53')
-    print(f'Do53 Resolvers: {do53_resolvers}')
+    # Read data into DataFrame list
+    dfs = list()
+    for t in tools:
+        for p in protocols:
+            for r in resolvers:
+                csv_file = f'./results/17.08/{t}-{p}-{r}.csv'
+                #print(csv_file)
+                
+                # Read the CSV file into a pandas DataFrame
+                data = pd.read_csv(csv_file)
 
-    doh_resolvers = get_main_resolvers('doh')
-    domains = get_tranco_top_x_domains(100)
-    print(f'Tranco top 100 domains: {domains}')
+                # Add columns for tool, protocol and resolver
+                data['Tool'] = t
+                data['Protocol'] = p
+                data['Resolver'] = r
 
-    # OUTSIDE LOOP: 30 TIMES EACH RESOLVER X DOMAIN
-    for i in range(30):
-        # loop
-        print(f'LOOP {i}:\n')
+                # Convert the timestamp column to datetime format
+                data['Timestamp'] = pd.to_datetime(data['Timestamp'])
 
-        # PYDIG DO53
-        print('\n##### PYDIG DO53 QUERIES..... #####')
-        for r in do53_resolvers:
-            results = []
-            for d in domains:
-                q = pydig_wrapper.query('do53',d,r[1])
-                #print(q) # DEBUGGING PRINT
-                results.append(q)
-            export_results('pydig','do53',r[0],results)
-        
-        # DNSPYTHON DO53
-        print('\n##### DNSPYTHON DO53 QUERIES..... #####')
-        for r in do53_resolvers:
-            results = []
-            for d in domains:
-                q = dnspython_wrapper.query('do53',d,r[1])
-                #print(q) # DEBUGGING PRINT
-                results.append(q)
-            export_results('dnspython','do53',r[0],results)
+                # Add to DataFrame list
+                dfs.append(data)
 
-        # PYDIG DOH
-        print('\n##### PYDIG DOH QUERIES..... #####')
-        for r in doh_resolvers:
-            results = []
-            o = urlparse(r[1])
-            for d in domains:
-                q = pydig_wrapper.query('doh',d,o[1],o[2])
-                #print(q) # DEBUGGING PRINT
-                results.append(q)
-            export_results('pydig','doh',r[0],results)
+                #print(data)
+    # Concat data in single DataFrame
+    df = pd.concat(dfs, ignore_index=True)
 
-        # DNSPYTHON DOH
-        print('\n##### DNSPYTHON DOH QUERIES..... #####')
-        for r in doh_resolvers:
-            results = []
-            for d in domains:
-                q = dnspython_wrapper.query('doh',d,r[1])
-                #print(q) # DEBUGGING PRINT
-                results.append(q)
-            export_results('dnspython','doh',r[0],results)
+    # COMPARING TOOLS
+    benchmark_tools(df)
 
-        '''
-        TODO: DO53 & DOH + FORMATAR RESPOSTA (TENTAR USAR AWK)
-        # DIG_SUBPROCESS 
-        print('\n##### DIG_SUBPROCESS DOH..... #####')
-        for r in doh_resolvers:
-            results = []
-            o = urlparse(r)
-            for d in domains:
-                q = dig_subprocess.query('doh',d[0],o[1],o[2])
-                #print(q) # DEBUGGING PRINT
-                results.append(q)
-            #export_results('dig_subprocess','doh',r[0],results)
-        '''
+    # COMPARING PROTOCOLS
+    benchmark_protocols(df)
 
-    end_time = time()
-    total_time = end_time - start_time
-    print(f'\nTOTAL_TIME = {total_time}\n')
+    # COMPARING TOP 10 DOMAINS
+    benchmark_top10_domains(df)
