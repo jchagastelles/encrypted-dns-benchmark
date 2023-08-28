@@ -1,5 +1,6 @@
 import encrypted_dns_measurement as edm
 import csv
+import math
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -15,7 +16,7 @@ top10_domains = edm.get_tranco_top_x_domains(10)
 # no Timeout: '& `Response Time` < 3000'
 # google domain: '& Domain == google.com'
 # top 10 domains: '& Domain in @top10_domains'
-
+# failure rate: '& (`Response Time` > 3000 | `Response Status` != 1 | (RCODE != "NOERROR" & ~RCODE.isnull()) | ~Error.isnull())'
 
 def benchmark_tools(df):
     """
@@ -25,18 +26,45 @@ def benchmark_tools(df):
     """
     for p in protocols:
         # Select and reshape data
-        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000 & `Response Status` == 1 & Domain == "google.com"')[["Tool", "Response Time", "Resolver"]]
+        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000 & Domain == "google.com"')[["Tool", "Response Time", "Resolver"]]
+        #print(df2)
         df2_pivot = pd.pivot_table(
             df2,
             values="Response Time",
             index="Resolver",
             columns="Tool",
-            aggfunc=np.mean
+            aggfunc=('count','mean','std')
         )
+
+        # TODO: Confidence Interval
+        df2_pivot = df2_pivot.join(pd.DataFrame(
+             np.random.rand(6,2),
+             columns=pd.MultiIndex.from_product([['ci95_range'], tools]),
+             index=df2_pivot.index))
+
+        for t in tools:
+            #ci95_hi = []
+            #ci95_lo = []
+            ci95_range = []
+            for i in df2_pivot.index:    
+                c = df2_pivot.loc[i, 'count'][t]
+                m = df2_pivot.loc[i, 'mean'][t]
+                s = df2_pivot.loc[i, 'std'][t]
+                #ci_hi = m + 1.96*s/math.sqrt(c)
+                ci_lo = m - 1.96*s/math.sqrt(c)
+                ci_range = m - ci_lo
+                #ci95_hi.append(ci_hi)
+                #ci95_lo.append(ci_lo)
+                ci95_range.append(ci_range)
+            #df2_pivot[('ci95_hi', t)] = ci95_hi
+            #df2_pivot[('ci95_lo', t)] = ci95_lo
+            df2_pivot[('ci95_range', t)] = ci95_range
+
         print(df2_pivot)
 
         # Format and plot chart
-        ax = df2_pivot.plot(kind="bar")
+        colors=['darkgray','gray','dimgray','lightgray']
+        ax = df2_pivot['mean'].plot(kind="bar", color=colors, yerr=df2_pivot['ci95_range'], capsize=4)
         f = ax.get_figure()
         #f.tight_layout()
         ax.set_xlabel("Resolvers")
@@ -54,7 +82,7 @@ def benchmark_protocols(df):
     """
     for t in tools:
         # Select and reshape data
-        df2 = df.query(f'Tool == "{t}" & `Response Time` < 3000 & `Response Status` == 1 & Domain == "google.com"')[["Protocol", "Response Time", "Resolver"]]
+        df2 = df.query(f'Tool == "{t}" & (`Response Time` < 3000 & `Response Status` == 1 & (RCODE == "NOERROR" | RCODE.isnull()) | Error.isnull()) & Domain == "google.com"')[["Protocol", "Response Time", "Resolver"]]
         df2_pivot = pd.pivot_table(
             df2,
             values="Response Time",
@@ -76,6 +104,11 @@ def benchmark_protocols(df):
         f.savefig(f'analysis/protocol_benchmark_{t}.pdf', bbox_inches='tight', dpi=300)
 
 def benchmark_top10_domains(df):
+    """
+    query, plot and save charts to compare response times of different resolvers in resolving the top 10 domains (1 for each tool/protocol combination)
+        Y axis = Mean Response Times (ms)
+        X axis = Main Resolvers
+    """
     for t in tools:
         for p in protocols:
             # Select and reshape data
@@ -101,6 +134,46 @@ def benchmark_top10_domains(df):
             #plt.show()
             f.savefig(f'analysis/top10domains_benchmark_{t}_{p}.pdf', bbox_inches='tight', dpi=300)
 
+def failure_rate(df):
+    """
+    query, plot and save charts to compare failure rates of different protocols for each resolver (1 for each tool)
+        failure = (Status == -1 OR RCODE != NOERRROR OR RCODE != NaN OR Error != NaN)
+        Y axis = Mean Response Times (ms)
+        X axis = Main Resolvers
+    """
+    #for t in tools:
+    # Select and reshape data
+    #Tool == "{t}" & 
+    df2 = df.query(f'(`Response Time` > 3000 | `Response Status` != 1 | (RCODE != "NOERROR" & ~RCODE.isnull()) | ~Error.isnull())')[["Tool", "Protocol", "Resolver"]]
+    #print(df2.groupby(["Tool", "Protocol", "Resolver"]).size())
+    print(df2.groupby(["Tool", "Protocol", "Resolver"]).agg({'Count':'count'}))
+
+    #df2 = df2.eval(f'FailureRate = {len(df2.index) / len(df.index)}')
+    #print(df2)
+    #print(df.count(1) / df2.count(1))
+    '''
+    df2_pivot = pd.pivot_table(
+        df2,
+        values="FailureRate",
+        index="Resolver",
+        columns="Protocol",
+        aggfunc=np.mean
+    )
+    print(df2_pivot)
+
+    # Format and plot chart
+    ax = df2_pivot.plot(kind="bar")
+    #f.tight_layout()
+    ax.set_xlabel("Resolvers")
+    ax.set_ylabel("Failure Rate")
+    ax.legend(bbox_to_anchor=(1.0, 1.0))
+    f = ax.get_figure()
+
+    plt.subplots_adjust(bottom=0.3)
+    #plt.show()
+    f.savefig(f'analysis/failure_rates_{t}.pdf', bbox_inches='tight', dpi=300)
+    '''
+        
 if __name__ == "__main__":
     # TODO: BETTER PARAMETRIZATION
     tools = ['dnspython', 'pydig']
@@ -137,7 +210,10 @@ if __name__ == "__main__":
     benchmark_tools(df)
 
     # COMPARING PROTOCOLS
-    benchmark_protocols(df)
+    #benchmark_protocols(df)
 
     # COMPARING TOP 10 DOMAINS
-    benchmark_top10_domains(df)
+    #benchmark_top10_domains(df)
+
+    # TODO: TERMINAR FUNCAO FAILURE RATES
+    #failure_rate(df)
