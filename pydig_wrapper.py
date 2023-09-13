@@ -30,6 +30,7 @@ def do53_query(domain, resolver):
             resolver
         ],
         additional_args=[
+            '+tries=1',
             '+timeout=3'
         ]
     )
@@ -69,6 +70,7 @@ def doh_query(domain, resolver, endpoint):
         ],
         additional_args=[
             f'+https={endpoint}',
+            '+tries=1',
             '+timeout=3'
         ]
     )

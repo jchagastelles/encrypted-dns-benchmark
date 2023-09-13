@@ -1,4 +1,15 @@
+import time
 import subprocess
+
+def get_query_result_dict():
+    return {'Domain': None, 
+            'Timestamp': None, 
+            'Response Status': None, 
+            'Response Time': None, 
+            'RCODE': None, 
+            'TTL': None, 
+            'Addresses': [], 
+            'Error': None}
 
 def query(protocol, domain, resolver='', endpoint=''):
     if protocol == 'do53':
@@ -9,17 +20,36 @@ def query(protocol, domain, resolver='', endpoint=''):
         return dot_query(domain, resolver, endpoint)
 
 def do53_query(domain, resolver):
-    # TODO: ESTENDER AWK SCRIPT PRA PEGAR RESTO DAS METRICAS
+    # TODO: ESTENDER AWK SCRIPT PRA PEGAR E FORMATAR RESTO DAS METRICAS
     # awk '/^;; ANSWER SECTION:$/,/^$/ {if ($0 != ";; ANSWER SECTION:" && $0 != "") print $NF}'
-    #cmd = ['dig', 'multiline', 'answer', f'@{resolver}', f'{domain}', 'timeout=3']
-    cmd = f"dig +multiline +answer @{resolver} {domain} +timeout=3 | awk '/^;; ANSWER SECTION:$/,/^$/ {{if ($0 != \";; ANSWER SECTION:\" && $0 != \"\") print $NF}}'"
+
+    query_result = get_query_result_dict()
+    query_result['Domain'] = domain
+
+    
+    cmd = f"dig +multiline +answer @{resolver} {domain} +tries=1 +timeout=3"
+
     try:
-        #result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-        #return result.stdout
-        return str(output)
-    except subprocess.CalledProcessError as e:
-        return f'Command execution failed: {e}'
+        query_result['Timestamp'] = start_time = time.time()
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, shell=True)
+        end_time = time.time()
+
+        #print(result.stdout)
+        query_result['Response Status'] = 1
+
+        #output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+        #return str(output)
+    except Exception as e:
+        end_time = time.time()
+
+        query_result['Response Status'] = -1
+        query_result['Addresses'] = []
+        query_result['Error'] = e
+    
+    res_time = end_time*1000 - start_time*1000
+    query_result['Response Time'] = res_time
+    return query_result
+    
 
 def doh_query(domain, resolver, endpoint):
     # TODO: ESTENDER AWK SCRIPT PRA PEGAR RESTO DAS METRICAS

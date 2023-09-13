@@ -6,8 +6,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-tools = ['dnspython', 'pydig']
-protocols = ['do53', 'doh']
+tools = ['dnspython', 'pydig', 'dig_subprocess']
+protocols = ['do53'] # TODO: ADD DOH/DOT LATER
 resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
 top10_domains = edm.get_tranco_top_x_domains(10)
 
@@ -38,7 +38,7 @@ def benchmark_tools(df):
 
         # TODO: Confidence Interval
         df2_pivot = df2_pivot.join(pd.DataFrame(
-             np.random.rand(6,2),
+             np.random.rand(6,3),
              columns=pd.MultiIndex.from_product([['ci95_range'], tools]),
              index=df2_pivot.index))
 
@@ -60,7 +60,7 @@ def benchmark_tools(df):
             #df2_pivot[('ci95_lo', t)] = ci95_lo
             df2_pivot[('ci95_range', t)] = ci95_range
 
-        print(df2_pivot)
+        #print(df2_pivot)
 
         # Format and plot chart
         colors=['darkgray','gray','dimgray','lightgray']
@@ -175,34 +175,32 @@ def failure_rate(df):
     '''
         
 if __name__ == "__main__":
-    # TODO: BETTER PARAMETRIZATION
-    tools = ['dnspython', 'pydig']
-    protocols = ['do53', 'doh']
-    resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
-
     # Read data into DataFrame list
     dfs = list()
     for t in tools:
         for p in protocols:
             for r in resolvers:
-                csv_file = f'./results/17.08/{t}-{p}-{r}.csv'
+                csv_file = f'./results/{t}-{p}-{r}.csv'
                 #print(csv_file)
                 
                 # Read the CSV file into a pandas DataFrame
-                data = pd.read_csv(csv_file)
+                try:
+                    data = pd.read_csv(csv_file)
 
-                # Add columns for tool, protocol and resolver
-                data['Tool'] = t
-                data['Protocol'] = p
-                data['Resolver'] = r
+                    # Add columns for tool, protocol and resolver
+                    data['Tool'] = t
+                    data['Protocol'] = p
+                    data['Resolver'] = r
 
-                # Convert the timestamp column to datetime format
-                data['Timestamp'] = pd.to_datetime(data['Timestamp'])
+                    # Convert the timestamp column to datetime format
+                    data['Timestamp'] = pd.to_datetime(data['Timestamp'])
 
-                # Add to DataFrame list
-                dfs.append(data)
+                    # Add to DataFrame list
+                    dfs.append(data)
 
-                #print(data)
+                    #print(data)
+                except:
+                    pass
     # Concat data in single DataFrame
     df = pd.concat(dfs, ignore_index=True)
 

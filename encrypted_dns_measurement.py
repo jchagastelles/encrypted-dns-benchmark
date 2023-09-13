@@ -56,7 +56,6 @@ def export_results(tool, protocol, resolver, results):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval='')
             writer.writeheader()
 
-            # write row
             for i, r in enumerate(results):
                 # stringify & format fields
                 r['Timestamp'] = f'{r["Timestamp"]:.3f}'
@@ -68,6 +67,7 @@ def export_results(tool, protocol, resolver, results):
         with open(f'./results/{tool}-{protocol}-{resolver}.csv', 'a', newline='') as csvfile:
             fieldnames = ['Domain', 'Timestamp', 'Response Status', 'Response Time', 'RCODE', 'TTL', 'Addresses', 'Error']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval='')
+
             for i, r in enumerate(results):
                 # stringify & format fields
                 r['Timestamp'] = f'{r["Timestamp"]:.3f}'
@@ -85,13 +85,12 @@ if __name__ == "__main__":
     do53_resolvers = get_main_resolvers('do53')
     print(f'Do53 Resolvers: {do53_resolvers}')
 
-    doh_resolvers = get_main_resolvers('doh')
+    #doh_resolvers = get_main_resolvers('doh')
+
     domains = get_tranco_top_x_domains(1)
     print(f'Tranco top 100 domains: {domains}')
 
-    """ 
-    # OUTSIDE LOOP: 30 TIMES EACH RESOLVER X DOMAIN
-    for i in range(30):
+    for i in range(100):
         # loop
         print(f'LOOP {i}:\n')
 
@@ -115,6 +114,17 @@ if __name__ == "__main__":
                 results.append(q)
             export_results('dnspython','do53',r[0],results)
 
+        # DIG_SUBPROCESS DO53
+        print('\n##### DIG_SUBPROCESS DOH..... #####')
+        for r in do53_resolvers:
+            results = []
+            o = urlparse(r[1])
+            for d in domains:
+                q = dig_subprocess.query('do53',d,o[2])
+                #print(q) # DEBUGGING PRINT
+                results.append(q)
+            export_results('dig_subprocess','do53',r[0],results)
+        '''
         # PYDIG DOH
         print('\n##### PYDIG DOH QUERIES..... #####')
         for r in doh_resolvers:
@@ -136,27 +146,7 @@ if __name__ == "__main__":
                 results.append(q)
             export_results('dnspython','doh',r[0],results)
 
-        
-
-        # TODO: DO53 & DOH + FORMATAR RESPOSTA (TENTAR USAR AWK)
-        # DIG_SUBPROCESS 
-        print('\n##### DIG_SUBPROCESS DOH..... #####')
-        for r in doh_resolvers:
-            results = []
-            o = urlparse(r)
-            for d in domains:
-                q = dig_subprocess.query('doh',d[0],o[1],o[2])
-                #print(q) # DEBUGGING PRINT
-                results.append(q)
-            #export_results('dig_subprocess','doh',r[0],results)
- """
-    for r in do53_resolvers:
-        results = []
-        o = urlparse(r[1])
-        print(o)
-        for d in domains:
-            q = dig_subprocess.query('do53',d,o[1],o[2])
-            print(q)
+        '''
 
     end_time = time.time()
     total_time = end_time - start_time
