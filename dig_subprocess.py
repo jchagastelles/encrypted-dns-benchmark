@@ -23,11 +23,14 @@ def do53_query(domain, resolver):
 
 def doh_query(domain, resolver, endpoint):
     # TODO: ESTENDER AWK SCRIPT PRA PEGAR RESTO DAS METRICAS
-    cmd = ['dig', 'multiline', 'answer', f'@{resolver}', f'{domain}', f'https={endpoint}', 'timeout=3']
+    #cmd = ['dig', 'multiline', 'answer', f'@{resolver}', f'{domain}', f'https={endpoint}', 'timeout=3']
+    cmd = f"dig +multiline +answer @{resolver} +https={endpoint} {domain} +timeout=3"
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, shell=True)
+        #output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
         return result.stdout
+        #return str(output)
     except subprocess.CalledProcessError as e:
         return f'Command execution failed: {e}'
 

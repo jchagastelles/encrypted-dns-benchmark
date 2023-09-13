@@ -86,9 +86,10 @@ if __name__ == "__main__":
     print(f'Do53 Resolvers: {do53_resolvers}')
 
     doh_resolvers = get_main_resolvers('doh')
-    domains = get_tranco_top_x_domains(100)
+    domains = get_tranco_top_x_domains(1)
     print(f'Tranco top 100 domains: {domains}')
 
+    """ 
     # OUTSIDE LOOP: 30 TIMES EACH RESOLVER X DOMAIN
     for i in range(30):
         # loop
@@ -135,8 +136,9 @@ if __name__ == "__main__":
                 results.append(q)
             export_results('dnspython','doh',r[0],results)
 
-        '''
-        TODO: DO53 & DOH + FORMATAR RESPOSTA (TENTAR USAR AWK)
+        
+
+        # TODO: DO53 & DOH + FORMATAR RESPOSTA (TENTAR USAR AWK)
         # DIG_SUBPROCESS 
         print('\n##### DIG_SUBPROCESS DOH..... #####')
         for r in doh_resolvers:
@@ -147,7 +149,14 @@ if __name__ == "__main__":
                 #print(q) # DEBUGGING PRINT
                 results.append(q)
             #export_results('dig_subprocess','doh',r[0],results)
-        '''
+ """
+    for r in do53_resolvers:
+        results = []
+        o = urlparse(r[1])
+        print(o)
+        for d in domains:
+            q = dig_subprocess.query('do53',d,o[1],o[2])
+            print(q)
 
     end_time = time.time()
     total_time = end_time - start_time
