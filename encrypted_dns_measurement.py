@@ -115,15 +115,19 @@ if __name__ == "__main__":
             export_results('dnspython','do53',r[0],results)
 
         # DIG_SUBPROCESS DO53
-        print('\n##### DIG_SUBPROCESS DOH..... #####')
+        print('\n##### DIG_SUBPROCESS DO53 QUERIES..... #####')
         for r in do53_resolvers:
-            results = []
+            results_timelib = []
+            results_awk = []
             o = urlparse(r[1])
             for d in domains:
                 q = dig_subprocess.query('do53',d,o[2])
                 #print(q) # DEBUGGING PRINT
-                results.append(q)
-            export_results('dig_subprocess','do53',r[0],results)
+                results_timelib.append(q[0])
+                results_awk.append(q[1])
+
+            export_results('dig_timelib','do53',r[0],results_timelib)
+            export_results('dig_awk','do53',r[0],results_awk)
         '''
         # PYDIG DOH
         print('\n##### PYDIG DOH QUERIES..... #####')

@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-tools = ['dnspython', 'pydig', 'dig_subprocess']
+tools = ['dnspython', 'pydig', 'dig_timelib', 'dig_awk']
 protocols = ['do53'] # TODO: ADD DOH/DOT LATER
 resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
 top10_domains = edm.get_tranco_top_x_domains(10)
@@ -38,7 +38,7 @@ def benchmark_tools(df):
 
         # TODO: Confidence Interval
         df2_pivot = df2_pivot.join(pd.DataFrame(
-             np.random.rand(6,3),
+             np.random.rand(6,4),
              columns=pd.MultiIndex.from_product([['ci95_range'], tools]),
              index=df2_pivot.index))
 

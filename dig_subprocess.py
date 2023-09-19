@@ -23,32 +23,44 @@ def do53_query(domain, resolver):
     # TODO: ESTENDER AWK SCRIPT PRA PEGAR E FORMATAR RESTO DAS METRICAS
     # awk '/^;; ANSWER SECTION:$/,/^$/ {if ($0 != ";; ANSWER SECTION:" && $0 != "") print $NF}'
 
-    query_result = get_query_result_dict()
-    query_result['Domain'] = domain
+    query_result_timelib = get_query_result_dict()
+    query_result_awk = get_query_result_dict()
 
+    query_result_timelib['Domain'] = domain
+    query_result_awk['Domain'] = domain
     
-    cmd = f"dig +multiline +answer @{resolver} {domain} +tries=1 +timeout=3"
+    cmd = f"dig +multiline +answer @{resolver} {domain} +tries=1 +timeout=3" + "| awk '/Query/{t=$4}END{print t}'"
 
     try:
-        query_result['Timestamp'] = start_time = time.time()
+        query_result_timelib['Timestamp'] = start_time = time.time()
+        query_result_awk['Timestamp'] = start_time
         result = subprocess.run(cmd, capture_output=True, text=True, check=True, shell=True)
         end_time = time.time()
 
-        #print(result.stdout)
-        query_result['Response Status'] = 1
+        query_result_awk['Response Time'] = float(result.stdout)
+
+        query_result_timelib['Response Status'] = 1
+        query_result_awk['Response Status'] = 1
 
         #output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
         #return str(output)
     except Exception as e:
         end_time = time.time()
 
-        query_result['Response Status'] = -1
-        query_result['Addresses'] = []
-        query_result['Error'] = e
+        query_result_awk['Response Time'] = 3001 # test
+
+        query_result_timelib['Response Status'] = -1
+        query_result_awk['Response Status'] = -1
+
+        query_result_timelib['Addresses'] = []
+        query_result_awk['Addresses'] = []
+
+        query_result_timelib['Error'] = e
+        query_result_awk['Error'] = e
     
     res_time = end_time*1000 - start_time*1000
-    query_result['Response Time'] = res_time
-    return query_result
+    query_result_timelib['Response Time'] = res_time
+    return [query_result_timelib, query_result_awk]
     
 
 def doh_query(domain, resolver, endpoint):
