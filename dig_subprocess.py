@@ -33,10 +33,10 @@ def do53_query(domain, resolver):
 
     try:
         query_result_timelib['Timestamp'] = start_time = time.time()
-        query_result_awk['Timestamp'] = start_time
         result = subprocess.run(cmd, capture_output=True, text=True, check=True, shell=True)
         end_time = time.time()
 
+        query_result_awk['Timestamp'] = start_time
         query_result_awk['Response Time'] = float(result.stdout)
 
         query_result_timelib['Response Status'] = 1

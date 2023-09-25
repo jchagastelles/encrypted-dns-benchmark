@@ -173,6 +173,20 @@ def failure_rate(df):
     #plt.show()
     f.savefig(f'analysis/failure_rates_{t}.pdf', bbox_inches='tight', dpi=300)
     '''
+    
+    def print_stats(df):
+        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000 & Domain == "google.com"')[["Tool", "Response Time", "Resolver"]]
+        print(df2)
+        df2.describe()
+        df2_pivot = pd.pivot_table(
+            df2,
+            values="Response Time",
+            index="Resolver",
+            columns="Tool",
+            aggfunc=('count','mean','std')
+        )
+        print(df2_pivot)
+        df2_pivot.describe()
         
 if __name__ == "__main__":
     # Read data into DataFrame list
@@ -203,6 +217,9 @@ if __name__ == "__main__":
                     pass
     # Concat data in single DataFrame
     df = pd.concat(dfs, ignore_index=True)
+
+    # Print Descriptive Statistics
+    #print_stats(df)
 
     # COMPARING TOOLS
     benchmark_tools(df)

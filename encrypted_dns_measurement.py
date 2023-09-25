@@ -87,12 +87,13 @@ if __name__ == "__main__":
 
     #doh_resolvers = get_main_resolvers('doh')
 
+    x = 1
     domains = get_tranco_top_x_domains(1)
-    print(f'Tranco top 100 domains: {domains}')
+    print(f'Tranco top {x} domains: {domains}')
 
-    for i in range(100):
+    for i in range(50):
         # loop
-        print(f'LOOP {i}:\n')
+        print(f'LOOP {i}:')
 
         # PYDIG DO53
         print('\n##### PYDIG DO53 QUERIES..... #####')
