@@ -25,7 +25,7 @@
   <h3 align="center">Encrypted DNS Benchmark</h3>
 
   <p align="center">
-    Performance benchmarking of Classic DNS (Do53), DNS-Over-HTTPS (DoH), DNS-Over-TLS (DoT)
+    Performance benchmarking of DNS Tools and Protocols such as Classic DNS (Do53), DNS-Over-HTTPS (DoH), DNS-Over-TLS (DoT)
     <br />
     ·
     <a href="https://github.com/jchagastelles/encrypted-dns-benchmark/issues">Report Bug</a>
@@ -110,13 +110,13 @@ This section should list any major frameworks/libraries used to bootstrap your p
 
 <!-- GETTING STARTED -->
 ## Getting Started
-...
+TO-DO
 <!--
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
 -->
 ### Prerequisites
-...
+TO-DO
 <!--
 This is an example of how to list things you need to use the software and how to install them.
 * npm
@@ -125,7 +125,7 @@ This is an example of how to list things you need to use the software and how to
   ```
 -->
 ### Installation
-...
+TO-DO
 <!--
 _Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
 
@@ -149,7 +149,7 @@ _Below is an example of how you can instruct your audience on installing and set
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-...
+TO-DO
 <!--
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
