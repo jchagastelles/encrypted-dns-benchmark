@@ -160,6 +160,4 @@ cython_debug/
 #.idea/
 
 # datasets
-datasets/*
 .tranco/*
-results/*

@@ -7,8 +7,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 tools = ['dnspython', 'pydig', 'dig_timelib', 'dig_awk']
-protocols = ['do53'] # TODO: ADD DOH/DOT LATER
-resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
+protocols = ['do53', 'doh'] # TODO: ADD DOH/DOT LATER
+#resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
+resolvers = ['google','quad9','cloudflare','cleanbrowsing','adguard']
 top10_domains = edm.get_tranco_top_x_domains(10)
 
 # Queries
@@ -26,7 +27,7 @@ def benchmark_tools(df):
     """
     for p in protocols:
         # Select and reshape data
-        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000 & Domain == "google.com"')[["Tool", "Response Time", "Resolver"]]
+        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000')[["Tool", "Response Time", "Resolver"]]
         #print(df2)
         df2_pivot = pd.pivot_table(
             df2,
@@ -38,7 +39,7 @@ def benchmark_tools(df):
 
         # TODO: Confidence Interval
         df2_pivot = df2_pivot.join(pd.DataFrame(
-             np.random.rand(6,4),
+             np.random.rand(5,4),
              columns=pd.MultiIndex.from_product([['ci95_range'], tools]),
              index=df2_pivot.index))
 
@@ -72,7 +73,7 @@ def benchmark_tools(df):
 
         plt.subplots_adjust(bottom=0.3)
         #plt.show()
-        f.savefig(f'analysis/tool_benchmark_{p}.pdf', bbox_inches='tight', dpi=300)
+        f.savefig(f'results/tool_benchmark_{p}.pdf', bbox_inches='tight', dpi=300)
 
 def benchmark_protocols(df):
     """
@@ -101,7 +102,7 @@ def benchmark_protocols(df):
 
         plt.subplots_adjust(bottom=0.3)
         #plt.show()
-        f.savefig(f'analysis/protocol_benchmark_{t}.pdf', bbox_inches='tight', dpi=300)
+        f.savefig(f'results/protocol_benchmark_{t}.pdf', bbox_inches='tight', dpi=300)
 
 def benchmark_top10_domains(df):
     """
@@ -132,7 +133,7 @@ def benchmark_top10_domains(df):
 
             plt.subplots_adjust(bottom=0.3)
             #plt.show()
-            f.savefig(f'analysis/top10domains_benchmark_{t}_{p}.pdf', bbox_inches='tight', dpi=300)
+            f.savefig(f'results/top10domains_benchmark_{t}_{p}.pdf', bbox_inches='tight', dpi=300)
 
 def failure_rate(df):
     """
@@ -175,7 +176,7 @@ def failure_rate(df):
     '''
     
     def print_stats(df):
-        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000 & Domain == "google.com"')[["Tool", "Response Time", "Resolver"]]
+        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000')[["Tool", "Response Time", "Resolver"]]
         print(df2)
         df2.describe()
         df2_pivot = pd.pivot_table(
@@ -194,7 +195,7 @@ if __name__ == "__main__":
     for t in tools:
         for p in protocols:
             for r in resolvers:
-                csv_file = f'./results/{t}-{p}-{r}.csv'
+                csv_file = f'./analysis/{t}-{p}-{r}.csv'
                 #print(csv_file)
                 
                 # Read the CSV file into a pandas DataFrame

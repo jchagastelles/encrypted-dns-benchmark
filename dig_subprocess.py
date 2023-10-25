@@ -37,7 +37,10 @@ def do53_query(domain, resolver):
         end_time = time.time()
 
         query_result_awk['Timestamp'] = start_time
-        query_result_awk['Response Time'] = float(result.stdout)
+        try:
+            query_result_awk['Response Time'] = float(result.stdout)
+        except:
+            raise
 
         query_result_timelib['Response Status'] = 1
         query_result_awk['Response Status'] = 1
@@ -47,6 +50,7 @@ def do53_query(domain, resolver):
     except Exception as e:
         end_time = time.time()
 
+        query_result_timelib['Response Time'] = 3001 # test
         query_result_awk['Response Time'] = 3001 # test
 
         query_result_timelib['Response Status'] = -1
@@ -72,7 +76,7 @@ def doh_query(domain, resolver, endpoint):
     query_result_timelib['Domain'] = domain
     query_result_awk['Domain'] = domain
     
-    cmd = f"dig +multiline +answer +https @{resolver} {domain} +timeout=3"
+    cmd = f"dig +multiline +answer @{resolver} +https={endpoint} {domain} +timeout=3" + "| awk '/Query/{t=$4}END{print t}'"
 
     try:
         query_result_timelib['Timestamp'] = start_time = time.time()
@@ -88,9 +92,10 @@ def doh_query(domain, resolver, endpoint):
         #output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
         #return result.stdout
         #return str(output)
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         end_time = time.time()
 
+        query_result_timelib['Response Time'] = 3001 # test
         query_result_awk['Response Time'] = 3001 # test
 
         query_result_timelib['Response Status'] = -1
