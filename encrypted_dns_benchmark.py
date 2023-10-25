@@ -220,7 +220,7 @@ if __name__ == "__main__":
     df = pd.concat(dfs, ignore_index=True)
 
     # Print Descriptive Statistics
-    #print_stats(df)
+    print_stats(df)
 
     # COMPARING TOOLS
     benchmark_tools(df)
