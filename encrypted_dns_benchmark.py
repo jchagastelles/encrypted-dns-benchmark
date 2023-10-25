@@ -61,7 +61,7 @@ def benchmark_tools(df):
             #df2_pivot[('ci95_lo', t)] = ci95_lo
             df2_pivot[('ci95_range', t)] = ci95_range
 
-        #print(df2_pivot)
+        print(df2_pivot)
 
         # Format and plot chart
         colors=['darkgray','gray','dimgray','lightgray']
@@ -175,19 +175,19 @@ def failure_rate(df):
     f.savefig(f'analysis/failure_rates_{t}.pdf', bbox_inches='tight', dpi=300)
     '''
     
-    def print_stats(df):
-        df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000')[["Tool", "Response Time", "Resolver"]]
-        print(df2)
-        df2.describe()
-        df2_pivot = pd.pivot_table(
-            df2,
-            values="Response Time",
-            index="Resolver",
-            columns="Tool",
-            aggfunc=('count','mean','std')
-        )
-        print(df2_pivot)
-        df2_pivot.describe()
+def print_stats(df):
+    df2 = df.query(f'Protocol == "{p}" & `Response Time` < 3000')[["Tool", "Response Time", "Resolver"]]
+    print(df2)
+    df2.describe()
+    df2_pivot = pd.pivot_table(
+        df2,
+        values="Response Time",
+        index="Resolver",
+        columns="Tool",
+        aggfunc=('count','mean','std')
+    )
+    print(df2_pivot)
+    df2_pivot.describe()
         
 if __name__ == "__main__":
     # Read data into DataFrame list
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     for t in tools:
         for p in protocols:
             for r in resolvers:
-                csv_file = f'./analysis/{t}-{p}-{r}.csv'
+                csv_file = f'./results/{t}-{p}-{r}.csv'
                 #print(csv_file)
                 
                 # Read the CSV file into a pandas DataFrame
