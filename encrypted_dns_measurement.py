@@ -83,18 +83,19 @@ if __name__ == "__main__":
     start_time = time.time()
 
     do53_resolvers = get_main_resolvers('do53')
-    print(f'Do53 Resolvers: {do53_resolvers}')
+    #print(f'Do53 Resolvers: {do53_resolvers}')
 
-    #doh_resolvers = get_main_resolvers('doh')
+    doh_resolvers = get_main_resolvers('doh')
+    print(f'DoH Resolvers: {doh_resolvers}')
 
     x = 1
     domains = get_tranco_top_x_domains(1)
     print(f'Tranco top {x} domains: {domains}')
 
-    for i in range(50):
+    for i in range(5):
         # loop
         print(f'LOOP {i}:')
-
+        '''
         # PYDIG DO53
         print('\n##### PYDIG DO53 QUERIES..... #####')
         for r in do53_resolvers:
@@ -130,6 +131,7 @@ if __name__ == "__main__":
             export_results('dig_timelib','do53',r[0],results_timelib)
             export_results('dig_awk','do53',r[0],results_awk)
         '''
+        '''
         # PYDIG DOH
         print('\n##### PYDIG DOH QUERIES..... #####')
         for r in doh_resolvers:
@@ -150,8 +152,22 @@ if __name__ == "__main__":
                 #print(q) # DEBUGGING PRINT
                 results.append(q)
             export_results('dnspython','doh',r[0],results)
-
         '''
+
+        # DIG DOH
+        print('\n##### DIG_SUBPROCESS DOH QUERIES..... #####')
+        for r in doh_resolvers:
+            results_timelib = []
+            results_awk = []
+            o = urlparse(r[1])
+            print(o)
+            for d in domains:
+                q = dig_subprocess.query('doh',d,o[1])
+                print(q) # DEBUGGING PRINT
+                results_timelib.append(q[0])
+                results_awk.append(q[1])
+            export_results('dig_timelib','doh',r[0],results_timelib)
+            export_results('dig_awk','doh',r[0],results_awk)
 
     end_time = time.time()
     total_time = end_time - start_time
