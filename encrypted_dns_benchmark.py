@@ -37,7 +37,7 @@ def benchmark_tools(df):
             aggfunc=('count','mean','std')
         )
 
-        # TODO: Confidence Interval
+        # Confidence Interval
         df2_pivot = df2_pivot.join(pd.DataFrame(
              np.random.rand(5,4),
              columns=pd.MultiIndex.from_product([['ci95_range'], tools]),
@@ -94,7 +94,8 @@ def benchmark_protocols(df):
         print(df2_pivot)
 
         # Format and plot chart
-        ax = df2_pivot.plot(kind="bar")
+        colors=['darkgray','gray','dimgray','lightgray']
+        ax = df2_pivot.plot(kind="bar", color=colors)
         f = ax.get_figure()
         #f.tight_layout()
         ax.set_xlabel("Resolvers")
