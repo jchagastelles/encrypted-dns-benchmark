@@ -110,45 +110,55 @@ def doh_query(domain, resolver):
     return query_result
 
 def dot_query(domain, resolver):
-    ## TODO: DoT query
     query_result = get_query_result_dict()
     query_result['Domain'] = domain
 
     where = resolver
     qname = domain
-    with httpx.Client() as client:
+    mq = dns.message.make_query(qname, dns.rdatatype.NS)
 
-        mq = dns.message.make_query(qname, dns.rdatatype.A)
+    try:
+        query_result['Timestamp'] = start_time = time.time()
+        q = dns.query.tls(mq, where, timeout=3)
+        end_time = time.time()
 
-        try:
-            query_result['Timestamp'] = start_time = time.time()
+        query_result['Response Status'] = 1
 
-            q = dns.query.tls(mq, where, session=client, timeout=3)
-            end_time = time.time()
+        #print(f'q.answer={q.answer}')
+        #print(f'q.to_text()={q.to_text()}')
+        #print(f'q.rcode={dns.rcode.to_text(q.rcode())}')
 
-            query_result['Response Status'] = 1
+        query_result['RCODE'] = dns.rcode.to_text(q.rcode())
 
-            #print(f'q.answer={q.answer}')
-            #print(f'q.to_text()={q.to_text()}')
-            #print(f'q.rcode={dns.rcode.to_text(q.rcode())}')
+        for a in q.answer:
+            query_result['TTL'] = int(a.to_text().split(" ")[1])
+            for addr in a:
+                #print(f'addr={addr}')
+                query_result['Addresses'].append(addr.to_text())
+    except Exception as e:
+        end_time = time.time()
 
-            query_result['RCODE'] = dns.rcode.to_text(q.rcode())
-
-            for a in q.answer:
-                query_result['TTL'] = int(a.to_text().split(" ")[1])
-                for addr in a:
-                    #print(f'addr={addr}')
-                    query_result['Addresses'].append(addr.to_text())
-        except Exception as e:
-            end_time = time.time()
-
-            query_result['Response Status'] = -1
-            query_result['Addresses'] = []
-            query_result['Error'] = e
-
-            ## TODO: error handling
-            #print(f'Error: {e}')
+        query_result['Response Status'] = -1
+        query_result['Addresses'] = []
+        query_result['Error'] = e
+        
+        ## TODO: error handling
+        #print(f'Error: {e}')
     
     res_time = end_time*1000 - start_time*1000
     query_result['Response Time'] = res_time
     return query_result
+
+if __name__ == "__main__":
+    pass
+    # Do53 example query
+    #q = query('do53','inf.ufrgs.br','1.1.1.1')
+    #print(q)
+
+    # DoH example query
+    #q = query('doh','inf.ufrgs.br','dns.google/dns-query')
+    #print(q)
+
+    # DoT example query
+    #q = query('dot','inf.ufrgs.br','8.8.8.8')
+    #print(q)

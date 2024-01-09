@@ -17,7 +17,7 @@ def query(protocol, domain, resolver='', endpoint=''):
     elif protocol == 'doh':
         return doh_query(domain, resolver, endpoint)
     elif protocol == 'dot':
-        return dot_query(domain, resolver, endpoint)
+        return dot_query(domain, resolver)
 
 def do53_query(domain, resolver):
     # TODO: ESTENDER AWK SCRIPT PRA PEGAR E FORMATAR RESTO DAS METRICAS
@@ -111,8 +111,7 @@ def doh_query(domain, resolver, endpoint):
     query_result_timelib['Response Time'] = res_time
     return [query_result_timelib, query_result_awk]
 
-def dot_query(domain, resolver, endpoint):
-    ## TODO: DoT query
+def dot_query(domain, resolver):
     # TODO: ESTENDER AWK SCRIPT PRA PEGAR RESTO DAS METRICAS
     #cmd = ['dig', 'multiline', 'answer', f'@{resolver}', f'{domain}', f'https={endpoint}', 'timeout=3']
     query_result_timelib = get_query_result_dict()
@@ -121,7 +120,7 @@ def dot_query(domain, resolver, endpoint):
     query_result_timelib['Domain'] = domain
     query_result_awk['Domain'] = domain
     
-    cmd = f"dig +multiline +answer @{resolver} +tls={endpoint} {domain} +timeout=3" + "| awk '/Query/{t=$4}END{print t}'"
+    cmd = f"dig +multiline +answer @{resolver} +tls {domain} +timeout=3" + "| awk '/Query/{t=$4}END{print t}'"
 
     try:
         query_result_timelib['Timestamp'] = start_time = time.time()
@@ -157,8 +156,15 @@ def dot_query(domain, resolver, endpoint):
     return [query_result_timelib, query_result_awk]
 
 if __name__ == "__main__":
+    pass
+    # Do53 example query
     #q = query('do53','inf.ufrgs.br','1.1.1.1')
     #print(q)
 
-    q = query('doh','inf.ufrgs.br','dns.google', '/dns-query')
-    print(q)
+    # DoH example query
+    #q = query('doh','inf.ufrgs.br','dns.google', '/dns-query')
+    #print(q)
+
+    # DoT example query
+    #q = query('dot','inf.ufrgs.br','8.8.8.8')
+    #print(q)

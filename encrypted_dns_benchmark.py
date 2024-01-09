@@ -7,7 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 tools = ['dnspython', 'pydig', 'dig_timelib', 'dig_awk']
-protocols = ['do53', 'doh'] # TODO: ADD DOH/DOT LATER
+protocols = ['do53', 'doh', 'dot']
 #resolvers = [x[0] for x in edm.get_main_resolvers('do53')]
 resolvers = ['google','quad9','cloudflare','cleanbrowsing','adguard']
 top10_domains = edm.get_tranco_top_x_domains(10)
@@ -220,10 +220,10 @@ if __name__ == "__main__":
     df = pd.concat(dfs, ignore_index=True)
 
     # Print Descriptive Statistics
-    print_stats(df)
+    #print_stats(df)
 
     # COMPARING TOOLS
-    benchmark_tools(df)
+    #benchmark_tools(df)
 
     # COMPARING PROTOCOLS
     #benchmark_protocols(df)

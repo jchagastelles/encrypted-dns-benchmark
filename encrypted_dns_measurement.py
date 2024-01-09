@@ -48,7 +48,7 @@ def export_results(tool, protocol, resolver, results):
     csv_path = Path(f'./results/{tool}-{protocol}-{resolver}.csv')
     write_or_append = 'a'
 
-    print(f'WRITING TO {csv_path}.....')
+    #print(f'WRITING TO {csv_path}.....')
     if not csv_path.exists():
         with open(f'./results/{tool}-{protocol}-{resolver}.csv', 'w', newline='') as csvfile:
             # write header (query_result dictionary keys)
@@ -57,7 +57,7 @@ def export_results(tool, protocol, resolver, results):
             writer.writeheader()
 
             for i, r in enumerate(results):
-                print(r)
+                #print(r)
                 # stringify & format fields
                 r['Timestamp'] = f'{r["Timestamp"]:.3f}'
                 r['Response Time'] = f'{r["Response Time"]:.3f}'
@@ -70,7 +70,7 @@ def export_results(tool, protocol, resolver, results):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval='')
 
             for i, r in enumerate(results):
-                print(r)
+                #print(r)
                 # stringify & format fields
                 r['Timestamp'] = f'{r["Timestamp"]:.3f}'
                 r['Response Time'] = f'{r["Response Time"]:.3f}'
@@ -93,13 +93,16 @@ if __name__ == "__main__":
     doh_resolvers = get_main_resolvers('doh')
     #print(f'DoH Resolvers: {doh_resolvers}')
 
+    dot_resolvers = get_main_resolvers('dot')
+    #print(f'DoH Resolvers: {doh_resolvers}')
+
     x = 1
     domains = get_tranco_top_x_domains(1)
-    print(f'Tranco top {x} domains: {domains}')
+    #print(f'Tranco top {x} domains: {domains}')
 
     for i in range(500):
-        # loop
         print(f'LOOP {i}:')
+
         '''
         # PYDIG DO53
         print('\n##### PYDIG DO53 QUERIES..... #####')
@@ -171,44 +174,42 @@ if __name__ == "__main__":
                 results_awk.append(q[1])
             export_results('dig_timelib','doh',r[0],results_timelib)
             export_results('dig_awk','doh',r[0],results_awk)
-
         '''
+        
         # PYDIG DOT
         print('\n##### PYDIG DOT QUERIES..... #####')
-        for r in do53_resolvers:
+        for r in dot_resolvers:
             results = []
-            o = urlparse(r[1])
             for d in domains:
-                q = pydig_wrapper.query('dot',d,o[1],o[2])
-                print(q) # DEBUGGING PRINT
+                q = pydig_wrapper.query('dot',d,r[1])
+                #print(q) # DEBUGGING PRINT
                 results.append(q)
             export_results('pydig','dot',r[0],results)
-        '''
+        
         # DNSPYTHON DOT
         print('\n##### DNSPYTHON DOT QUERIES..... #####')
-        for r in do53_resolvers:
+        for r in dot_resolvers:
             results = []
             for d in domains:
                 q = dnspython_wrapper.query('dot',d,r[1])
-                print(q) # DEBUGGING PRINT
+                #print(q) # DEBUGGING PRINT
                 results.append(q)
             export_results('dnspython','dot',r[0],results)
         
 
         # DIG DOT
         print('\n##### DIG_SUBPROCESS DOT QUERIES..... #####')
-        for r in do53_resolvers:
+        for r in dot_resolvers:
             results_timelib = []
             results_awk = []
-            o = urlparse(r[1])
             for d in domains:
-                q = dig_subprocess.query('dot',d,o[1],o[2])
-                print(q) # DEBUGGING PRINT
+                q = dig_subprocess.query('dot',d,r[1])
+                #print(q) # DEBUGGING PRINT
                 results_timelib.append(q[0])
                 results_awk.append(q[1])
             export_results('dig_timelib','dot',r[0],results_timelib)
             export_results('dig_awk','dot',r[0],results_awk)
-        '''
+        
         
     end_time = time.time()
     total_time = end_time - start_time

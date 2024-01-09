@@ -18,7 +18,7 @@ def query(protocol, domain, resolver, endpoint=''):
     elif protocol == 'doh':
         return doh_query(domain, resolver, endpoint)
     elif protocol == 'dot':
-        return dot_query(domain, resolver, endpoint)
+        return dot_query(domain, resolver)
 
 def do53_query(domain, resolver):
     query_result = get_query_result_dict()
@@ -99,18 +99,17 @@ def doh_query(domain, resolver, endpoint):
     query_result['Response Time'] = res_time
     return query_result
 
-def dot_query(domain, resolver, endpoint):
-    ## TODO: DoT query
+def dot_query(domain, resolver):
     query_result = get_query_result_dict()
     query_result['Domain'] = domain
     
     resolver = pydig.Resolver(
-        executable='/usr/bin/dig',
+        executable='/usr/local/bin/dig', # change this to '/usr/bin/dig' in case of default bind/dig installation
         nameservers=[
             resolver
         ],
         additional_args=[
-            f'+tls={endpoint}',
+            f'+tls',
             '+tries=1',
             '+timeout=3'
         ]
@@ -139,3 +138,17 @@ def dot_query(domain, resolver, endpoint):
     res_time = end_time*1000 - start_time*1000
     query_result['Response Time'] = res_time
     return query_result
+
+if __name__ == "__main__":
+    pass
+    # Do53 example query
+    #q = query('do53','inf.ufrgs.br','1.1.1.1')
+    #print(q)
+
+    # DoH example query
+    #q = query('doh','inf.ufrgs.br','dns.google', '/dns-query')
+    #print(q)
+
+    # DoT example query
+    #q = query('dot','inf.ufrgs.br','8.8.8.8')
+    #print(q)
