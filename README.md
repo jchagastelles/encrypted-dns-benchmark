@@ -108,15 +108,18 @@ This section should list any major frameworks/libraries used to bootstrap your p
 -->
 
 
-<!-- GETTING STARTED -->
+<!-- GETTING STARTED 
 ## Getting Started
-TO-DO
+TO-DO-->
 <!--
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
 -->
 ### Prerequisites
-TO-DO
+* numpy
+* pandas
+* matplotlib
+
 <!--
 This is an example of how to list things you need to use the software and how to install them.
 * npm
@@ -125,7 +128,16 @@ This is an example of how to list things you need to use the software and how to
   ```
 -->
 ### Installation
-TO-DO
+1. Clone the repo
+   ```sh
+   git clone https://github.com/jchagastelles/encrypted-dns-benchmark
+   ```
+2. Install pip dependencies
+  ```sh
+  pip install numpy
+  pip install pandas
+  pip install matplotlib
+  ```
 <!--
 _Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
 
@@ -148,8 +160,15 @@ _Below is an example of how you can instruct your audience on installing and set
 
 
 <!-- USAGE EXAMPLES -->
-## Usage
-TO-DO
+## Usage/Help
+1. Measurement
+  ```sh
+  python encrypted_dns_measurement -h
+  ```
+2. Benchmark
+  ```sh
+  python encrypted_dns_benchmark -h
+  ```
 <!--
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
