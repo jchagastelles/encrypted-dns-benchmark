@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 import pydig
 
 import time
@@ -16,7 +17,8 @@ def query(protocol, domain, resolver, endpoint=''):
     if protocol == 'do53':
         return do53_query(domain, resolver)
     elif protocol == 'doh':
-        return doh_query(domain, resolver, endpoint)
+        o = urlparse(resolver)
+        return doh_query(domain, o[1], o[2])
     elif protocol == 'dot':
         return dot_query(domain, resolver)
 
@@ -25,7 +27,7 @@ def do53_query(domain, resolver):
     query_result['Domain'] = domain
 
     resolver = pydig.Resolver(
-        executable='/usr/bin/dig',
+        executable='/usr/local/bin/dig', # '/usr/bin/dig' in case of default bind/dig installation
         nameservers=[
             resolver
         ],
@@ -50,11 +52,6 @@ def do53_query(domain, resolver):
         query_result['Addresses'] = []
         query_result['Error'] = e
 
-        ## TODO: ERROR HANDLING
-        #if e.returncode == 9:
-        #    print(f'No reply from server')
-        #print(f'Error: {e}')
-
     res_time = end_time*1000 - start_time*1000
     query_result['Response Time'] = res_time
     return query_result
@@ -64,7 +61,7 @@ def doh_query(domain, resolver, endpoint):
     query_result['Domain'] = domain
     
     resolver = pydig.Resolver(
-        executable='/usr/bin/dig',
+        executable='/usr/local/bin/dig', # '/usr/bin/dig' in case of default bind/dig installation
         nameservers=[
             resolver
         ],
@@ -90,11 +87,6 @@ def doh_query(domain, resolver, endpoint):
         query_result['Addresses'] = []
         query_result['Error'] = e
 
-        ## TODO: ERROR HANDLING
-        #if e.returncode == 9:
-        #    print(f'No reply from server')
-        #print(f'Error: {e}')
-
     res_time = end_time*1000 - start_time*1000
     query_result['Response Time'] = res_time
     return query_result
@@ -104,7 +96,7 @@ def dot_query(domain, resolver):
     query_result['Domain'] = domain
     
     resolver = pydig.Resolver(
-        executable='/usr/local/bin/dig', # change this to '/usr/bin/dig' in case of default bind/dig installation
+        executable='/usr/local/bin/dig', # '/usr/bin/dig' in case of default bind/dig installation
         nameservers=[
             resolver
         ],
@@ -129,11 +121,6 @@ def dot_query(domain, resolver):
         query_result['Response Status'] = -1
         query_result['Addresses'] = []
         query_result['Error'] = e
-
-        ## TODO: ERROR HANDLING
-        #if e.returncode == 9:
-        #    print(f'No reply from server')
-        #print(f'Error: {e}')
 
     res_time = end_time*1000 - start_time*1000
     query_result['Response Time'] = res_time

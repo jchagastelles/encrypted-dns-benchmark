@@ -1,0 +1,19 @@
+--- 8.8.8.8 ping statistics ---
+1000 packets transmitted, 1000 received, 0% packet loss, time 1000532ms
+rtt min/avg/max/mdev = 23.568/24.773/28.847/0.398 ms
+
+--- 9.9.9.9 ping statistics ---
+1000 packets transmitted, 1000 received, 0% packet loss, time 1000124ms
+rtt min/avg/max/mdev = 23.793/24.556/39.853/0.797 ms
+
+--- 1.1.1.1 ping statistics ---
+1000 packets transmitted, 1000 received, 0% packet loss, time 1000201ms
+rtt min/avg/max/mdev = 23.061/29.953/60.730/11.238 ms
+
+--- 185.228.168.168 ping statistics ---
+1000 packets transmitted, 1000 received, 0% packet loss, time 999697ms
+rtt min/avg/max/mdev = 135.274/136.684/151.850/1.596 ms
+
+--- 94.140.14.140 ping statistics ---
+1000 packets transmitted, 1000 received, 0% packet loss, time 1000242ms
+rtt min/avg/max/mdev = 26.585/27.210/31.579/0.476 ms

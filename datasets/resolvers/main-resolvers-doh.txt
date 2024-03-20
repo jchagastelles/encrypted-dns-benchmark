@@ -1,5 +1,0 @@
-google,https://dns.google/dns-query
-quad9,https://dns.quad9.net/dns-query
-cloudflare,https://cloudflare-dns.com/dns-query
-cleanbrowsing,https://doh.cleanbrowsing.org/doh/adult-filter
-adguard,https://unfiltered.adguard-dns.com/dns-query

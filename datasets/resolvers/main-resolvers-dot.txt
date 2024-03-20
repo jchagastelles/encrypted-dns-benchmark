@@ -1,5 +1,0 @@
-google,8.8.8.8
-quad9,9.9.9.9
-cloudflare,1.1.1.1
-cleanbrowsing,185.228.168.168
-adguard,94.140.14.140
